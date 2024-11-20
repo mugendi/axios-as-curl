@@ -1,4 +1,4 @@
-# AxiosAsCurl
+# Axios As Curl
 
 A Node.js library that provides an Axios-like interface while using `curl` under the hood. Perfect for scenarios where you need the power of curl with the convenience of Axios's API.
 
