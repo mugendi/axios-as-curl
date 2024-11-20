@@ -19,13 +19,13 @@ Axios and other NodeJS request clients are notorious for "ECONNREFUSED" and "ERR
 ## Installation
 
 ```bash
-npm install axios-to-curl
+npm install axios-as-curl
 ```
 
 ## Basic Usage
 
 ```javascript
-import { AxiosToCurl } from 'axios-to-curl';
+import { AxiosToCurl } from 'axios-as-curl';
 
 // Create an instance
 const client = new AxiosToCurl();
