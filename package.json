@@ -1,0 +1,28 @@
+{
+  "name": "axios-to-curl",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "form-data": "^4.0.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "axios",
+    "curl",
+    "requests",
+    "fetch",
+    "get",
+    "post",
+    "put",
+    "delete",
+    "http",
+    "https"
+  ],
+  "author": "Anthony Mugendi <ngurumugz@gmail.com>",
+  "description": "A Node.js library that provides an Axios-like interface while using `curl` under the hood. Perfect for scenarios where you need the power of curl with the convenience of Axios's API."
+}
