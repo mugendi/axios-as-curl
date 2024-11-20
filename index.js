@@ -10,11 +10,10 @@ import { PassThrough } from 'stream';
 
 const execAsync = promisify(exec);
 
-
-export class AxiosToCurl {
+class AxiosAsCurl {
   #defaults;
   #tempFiles = new Set();
-  
+
   constructor(defaultConfig = {}) {
     this.#defaults = {
       timeout: 10000,
@@ -22,14 +21,14 @@ export class AxiosToCurl {
       responseType: 'json', // 'json', 'text', 'stream', 'buffer'
       headers: {
         'User-Agent': 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)',
-        'Accept': '*/*'
+        Accept: '*/*',
       },
-      ...defaultConfig
+      ...defaultConfig,
     };
   }
 
   static create(config) {
-    return new AxiosToCurl(config);
+    return new AxiosAsCurl(config);
   }
 
   async request(options) {
@@ -43,18 +42,22 @@ export class AxiosToCurl {
         dns: null,
         connect: null,
         ttfb: null,
-        total: null
-      }
+        total: null,
+      },
     };
 
     try {
       const config = this.#mergeConfig(options);
       const curlCommand = await this.#buildCurlCommand(config, metadata);
-      const response = await this.#executeCurlWithRetry(curlCommand, config, metadata);
-      
+      const response = await this.#executeCurlWithRetry(
+        curlCommand,
+        config,
+        metadata
+      );
+
       // Clean up temp files after successful request
       await this.#cleanupTempFiles();
-      
+
       return response;
     } catch (error) {
       // In case of error, we still want to clean up
@@ -67,7 +70,7 @@ export class AxiosToCurl {
     return {
       ...this.#defaults,
       ...options,
-      headers: { ...this.#defaults.headers, ...options.headers }
+      headers: { ...this.#defaults.headers, ...options.headers },
     };
   }
 
@@ -75,7 +78,10 @@ export class AxiosToCurl {
     const parts = ['curl'];
 
     // Add timing information
-    parts.push('--write-out', '"%{time_namelookup} %{time_connect} %{time_starttransfer} %{time_total} %{num_redirects} %{url_effective}"');
+    parts.push(
+      '--write-out',
+      '"%{time_namelookup} %{time_connect} %{time_starttransfer} %{time_total} %{num_redirects} %{url_effective}"'
+    );
 
     // Method
     if (config.method) {
@@ -92,7 +98,10 @@ export class AxiosToCurl {
 
     // Output handling based on response type
     if (config.responseType === 'stream') {
-      const outputFile = join(tmpdir(), `response-${Math.random().toString(36).slice(2)}`);
+      const outputFile = join(
+        tmpdir(),
+        `response-${Math.random().toString(36).slice(2)}`
+      );
       this.#tempFiles.add(outputFile);
       parts.push('-o', outputFile);
       metadata.outputFile = outputFile;
@@ -118,10 +127,14 @@ export class AxiosToCurl {
   }
 
   async #handleRegularData(parts, data, metadata) {
-    const dataStr = typeof data === 'object' ? JSON.stringify(data) : String(data);
-    
+    const dataStr =
+      typeof data === 'object' ? JSON.stringify(data) : String(data);
+
     if (dataStr.length > 1000) {
-      const tmpFile = join(tmpdir(), `data-${Math.random().toString(36).slice(2)}`);
+      const tmpFile = join(
+        tmpdir(),
+        `data-${Math.random().toString(36).slice(2)}`
+      );
       await writeFile(tmpFile, dataStr);
       this.#tempFiles.add(tmpFile);
       metadata.tempFiles++;
@@ -134,7 +147,10 @@ export class AxiosToCurl {
   async #handleFormData(parts, formData, metadata) {
     for (const [key, value] of formData.entries()) {
       if (value instanceof Buffer || value instanceof Uint8Array) {
-        const tmpFile = join(tmpdir(), `upload-${Math.random().toString(36).slice(2)}`);
+        const tmpFile = join(
+          tmpdir(),
+          `upload-${Math.random().toString(36).slice(2)}`
+        );
         await writeFile(tmpFile, value);
         this.#tempFiles.add(tmpFile);
         metadata.tempFiles++;
@@ -165,14 +181,18 @@ export class AxiosToCurl {
         if (attempt > 0) {
           metadata.retries++;
           // Exponential backoff
-          await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+          await new Promise((resolve) =>
+            setTimeout(resolve, Math.pow(2, attempt) * 1000)
+          );
         }
 
         return await this.#executeCurl(curlCommand, config, metadata);
       } catch (error) {
         lastError = error;
         if (attempt === maxRetries) {
-          throw new Error(`Curl command failed after ${maxRetries} retries: ${error.message}`);
+          throw new Error(
+            `Curl command failed after ${maxRetries} retries: ${error.message}`
+          );
         }
       }
     }
@@ -181,17 +201,19 @@ export class AxiosToCurl {
   async #executeCurl(curlCommand, config, metadata) {
     try {
       const { stdout, stderr } = await execAsync(curlCommand, {
-        maxBuffer: 1024 * 1024 * 10 // 10MB buffer
+        maxBuffer: 1024 * 1024 * 10, // 10MB buffer
       });
 
       // Parse timing information from curl output
-      const [dns, connect, ttfb, total, redirects, finalUrl, ...output] = stdout.trim().split(' ');
-      
+      const [dns, connect, ttfb, total, redirects, finalUrl, ...output] = stdout
+        .trim()
+        .split(' ');
+
       metadata.timings = {
         dns: parseFloat(dns),
         connect: parseFloat(connect),
         ttfb: parseFloat(ttfb),
-        total: parseFloat(total)
+        total: parseFloat(total),
       };
       metadata.redirects = parseInt(redirects, 10);
       metadata.finalUrl = finalUrl;
@@ -226,7 +248,7 @@ export class AxiosToCurl {
         statusText: 'OK',
         headers: {}, // We should parse headers from curl output
         config,
-        metadata
+        metadata,
       };
     } catch (error) {
       throw new Error(`Curl command failed: ${error.message}`);
@@ -255,4 +277,4 @@ export class AxiosToCurl {
   }
 }
 
-export default AxiosToCurl;
+export default AxiosAsCurl;

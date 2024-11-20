@@ -1,8 +1,9 @@
-# Axios To CURL
+# AxiosAsCurl
 
 A Node.js library that provides an Axios-like interface while using `curl` under the hood. Perfect for scenarios where you need the power of curl with the convenience of Axios's API.
 
 ## But Why?
+
 Axios and other NodeJS request clients are notorious for "ECONNREFUSED" and "ERR_NETWORK" errors. While there are workarounds too keep the agents alive and so on, they also break from time to time. I therefore developed this in-place-replacement for Axios which uses the more powerful `curl` to actully run the requests. It solved my problems immediately and I hope it solves yours too! ♥
 
 ## Features
@@ -25,10 +26,10 @@ npm install axios-as-curl
 ## Basic Usage
 
 ```javascript
-import { AxiosToCurl } from 'axios-as-curl';
+import AxiosAsCurl from 'axios-as-curl';
 
 // Create an instance
-const client = new AxiosToCurl();
+const client = new AxiosAsCurl();
 
 // Make requests
 const response = await client.get('https://api.example.com/data');
@@ -40,14 +41,14 @@ console.log(response.data);
 ### Default Configuration
 
 ```javascript
-const client = new AxiosToCurl({
+const client = new AxiosAsCurl({
   timeout: 10000,
   maxRetries: 3,
   responseType: 'json', // 'json', 'text', 'stream', 'buffer'
   headers: {
     'User-Agent': 'Custom User Agent',
-    'Accept': '*/*'
-  }
+    Accept: '*/*',
+  },
 });
 ```
 
@@ -65,7 +66,7 @@ const client = new AxiosToCurl({
 ```javascript
 const response = await client.post('https://api.example.com/users', {
   name: 'John Doe',
-  email: 'john@example.com'
+  email: 'john@example.com',
 });
 
 console.log(response.data);
@@ -88,7 +89,7 @@ const response = await client.post('https://api.example.com/upload', form);
 
 ```javascript
 const response = await client.get('https://api.example.com/download', {
-  responseType: 'stream'
+  responseType: 'stream',
 });
 
 // Pipe to file
@@ -126,11 +127,11 @@ console.log(response.metadata);
 ### Constructor Options
 
 ```typescript
-interface AxiosToCurlConfig {
-  timeout?: number;          // Request timeout in ms (default: 10000)
-  maxRetries?: number;       // Max retry attempts (default: 3)
-  responseType?: 'json' | 'text' | 'stream' | 'buffer';  // Response type (default: 'json')
-  headers?: Record<string, string>;  // Default headers
+interface AxiosAsCurlConfig {
+  timeout?: number; // Request timeout in ms (default: 10000)
+  maxRetries?: number; // Max retry attempts (default: 3)
+  responseType?: 'json' | 'text' | 'stream' | 'buffer'; // Response type (default: 'json')
+  headers?: Record<string, string>; // Default headers
 }
 ```
 
@@ -148,27 +149,27 @@ All methods return a Promise with response object:
 ### Response Object
 
 ```typescript
-interface AxiosToCurlResponse {
-  data: any;                 // Response data
-  status: number;            // HTTP status code
-  statusText: string;        // HTTP status message
-  headers: Record<string, string>;  // Response headers
-  config: AxiosToCurlConfig;  // Request configuration
+interface AxiosAsCurlResponse {
+  data: any; // Response data
+  status: number; // HTTP status code
+  statusText: string; // HTTP status message
+  headers: Record<string, string>; // Response headers
+  config: AxiosAsCurlConfig; // Request configuration
   metadata: {
-    startTime: number;       // Request start timestamp
-    endTime: number;         // Request end timestamp
-    duration: number;        // Total duration in ms
-    retries: number;         // Number of retry attempts
-    redirects: number;       // Number of redirects
-    tempFiles: number;       // Number of temp files used
-    finalUrl: string;        // Final URL after redirects
+    startTime: number; // Request start timestamp
+    endTime: number; // Request end timestamp
+    duration: number; // Total duration in ms
+    retries: number; // Number of retry attempts
+    redirects: number; // Number of redirects
+    tempFiles: number; // Number of temp files used
+    finalUrl: string; // Final URL after redirects
     timings: {
-      dns: number;          // DNS lookup time in seconds
-      connect: number;      // Connection time in seconds
-      ttfb: number;         // Time to first byte in seconds
-      total: number;        // Total time in seconds
-    }
-  }
+      dns: number; // DNS lookup time in seconds
+      connect: number; // Connection time in seconds
+      ttfb: number; // Time to first byte in seconds
+      total: number; // Total time in seconds
+    };
+  };
 }
 ```
 
@@ -190,17 +191,17 @@ try {
 ```javascript
 const response = await client.get('https://api.example.com/data', {
   headers: {
-    'Authorization': 'Bearer token',
-    'Custom-Header': 'value'
-  }
+    Authorization: 'Bearer token',
+    'Custom-Header': 'value',
+  },
 });
 ```
 
 ### Retry Configuration
 
 ```javascript
-const client = new AxiosToCurl({
-  maxRetries: 5  // Will retry up to 5 times with exponential backoff
+const client = new AxiosAsCurl({
+  maxRetries: 5, // Will retry up to 5 times with exponential backoff
 });
 ```
 
@@ -208,13 +209,10 @@ const client = new AxiosToCurl({
 
 ```javascript
 const response = await client.get('https://api.example.com/large-file', {
-  responseType: 'stream'
+  responseType: 'stream',
 });
 
-await pipeline(
-  response.data,
-  createWriteStream('large-file.zip')
-);
+await pipeline(response.data, createWriteStream('large-file.zip'));
 ```
 
 ## Notes
